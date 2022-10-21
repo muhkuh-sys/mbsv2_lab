@@ -72,6 +72,29 @@ function tEnvDefault:SetBuildPath(strSourcePath, strOutputPath)
 end
 
 
+function tEnvDefault:Compile(...)
+  local tIn = TableFlatten{...}
+  local atSrc = {}
+  for _, tSrc in ipairs(tIn) do
+    table.insert(atSrc, self.pl.path.abspath(tSrc))
+  end
+  return Compile(self, atSrc)
+end
+
+
+
+function tEnvDefault:StaticLibrary(tTarget, ...)
+  local pl = self.pl
+  local tIn = TableFlatten{...}
+  local atSrc = {}
+  for _, tSrc in ipairs(tIn) do
+    table.insert(atSrc, pl.path.abspath(tSrc))
+  end
+  return StaticLibrary(self, pl.path.abspath(tTarget), atSrc)
+end
+
+
+
 ---------------------------------------------------------------------------------------------------------------------
 --
 -- Linker extension.
@@ -222,11 +245,11 @@ local astrPlatformLibSources = {
 -- Set ouput path for all sources in "platform/src/lib" to "platform/targets/netx90_com/lib".
 tSettings_netX90_PlatformLib:SetBuildPath('platform/src/lib', 'platform/targets/netx90_com/lib')
 -- Build all sources.
-local atObjectsPlatformLib = Compile(tSettings_netX90_PlatformLib, astrPlatformLibSources)
+local atObjectsPlatformLib = tSettings_netX90_PlatformLib:Compile(astrPlatformLibSources)
 
 -- Build a library from all objects.
 -- TODO: The output name is generated somehow. Make this more intuitive. Or document how it works. :)
-local tPlatformLib = StaticLibrary(tSettings_netX90_PlatformLib, 'platform/targets/platform_netx90_com', atObjectsPlatformLib)
+local tPlatformLib = tSettings_netX90_PlatformLib:StaticLibrary('platform/targets/platform_netx90_com', atObjectsPlatformLib)
 
 --------------------------------------------------------------------------------------------------------------
 --
@@ -253,6 +276,7 @@ AddJob('targets/version/version.h', "Template targets/version/version.h", _bam_e
 --
 -- Build blinki.
 --
+-- [[
 local tSettings_netX90_Blinki = tSettings_netX90:Clone()
 
 -- Set include paths for the platform lib.
@@ -272,7 +296,7 @@ local astrBlinkiNetx90Sources = {
 -- Set ouput path for all sources in "src" to "targets/netx90_com_intram".
 tSettings_netX90_Blinki:SetBuildPath('src', 'targets/netx90_com_intram')
 -- Build all sources.
-local atObjectsBlinki = Compile(tSettings_netX90_Blinki, astrBlinkiNetx90Sources)
+local atObjectsBlinki = tSettings_netX90_Blinki:Compile(astrBlinkiNetx90Sources)
 
 -- Now link everything to an ELF file.
 tSettings_netX90_Blinki.link.libs = {
@@ -286,15 +310,4 @@ tSettings_netX90_Blinki.link.libpath = {
   pl.path.abspath(pl.path.expanduser('~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/lib/gcc/arm-none-eabi/4.9.3/armv7e-m/'))
 }
 local tElf = tSettings_netX90_Blinki:Link('targets/blinki_netx90_com_intram.elf', 'src/netx90/netx90_com_intram.ld', atObjectsBlinki, tPlatformLib)
-
---[[
-BLINKI_NETX90_LDFLAGS="--gc-sections -nostdlib -static"
-${LD} --verbose -o ${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.elf \
- -T "${BLINKI_NETX90_SOURCE}/netx90/netx90_com_intram.ld" \
- ${BLINKI_NETX90_LDFLAGS} \
- -Map=${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.elf.map \
- ${BLINKI_NETX90_OUTPUT}/hboot_dpm.o ${BLINKI_NETX90_OUTPUT}/header.o ${BLINKI_NETX90_OUTPUT}/init.o ${BLINKI_NETX90_OUTPUT}/main.o \
- platform/targets/libplatform_netx90_com.a \
- ${LIBPATH} \
- -lm -lc -lgcc >${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.log
-]]
+--]]
