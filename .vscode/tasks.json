@@ -4,7 +4,17 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "./build.sh",
+            "command": "./run.sh",
+            "problemMatcher": "$gcc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "./run.sh -c",
             "problemMatcher": "$gcc",
             "group": {
                 "kind": "build",
