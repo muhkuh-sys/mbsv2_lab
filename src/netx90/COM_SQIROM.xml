@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR" device="SQIROM">
+	<Chunks>
+		<!-- TODO: Add option header for the hardware configuration. -->
+
+		<!-- Skip until the offset 0x2000.
+		     The chunk will start with the ID and length of 32 bits
+		     So that the chunks data starts exactly at 0x2008.
+		-->
+		<Skip absolute="0x02000" />
+
+		<!-- Load Programm for the COM CPU and start afterwards -->
+		<XIP>
+			<File name="@tElfCOM" />
+		</XIP>
+
+		<Execute>
+			<File name="@tElfCOM" />
+		</Execute>
+	</Chunks>
+</HBootImage>
+

@@ -1,0 +1,48 @@
+= MBS V2
+C. Thelen, S. Truber
+:description: Our work diary
+:url-repo: https://github.com/muhkuh-sys/mbsv2_lab
+
+== Useful links
+
+* https://docs.asciidoctor.org/asciidoc/latest/[AsciiDoc Language Documentation]
+
+== First Start
+
+As a first step we build the blinki project with a shell script.
+
+The tasks are:
+
+* We have more than one compiler and several target platforms.
+* We have a library (platform).
+* Bootimages must be built.
+
+For netX90 the compiler settings are '-march=armv7e-m' and '-mthumb'. GCC provides multilib pats for this:
+
+~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-gcc -print-multi-lib
+.;
+thumb;@mthumb
+fpu;@mfloat-abi=hard
+armv6-m;@mthumb@march=armv6s-m
+armv7-m;@mthumb@march=armv7-m
+armv7e-m;@mthumb@march=armv7e-m                       <--------- Here is the matching entry
+armv7-ar/thumb;@mthumb@march=armv7
+cortex-m7;@mthumb@mcpu=cortex-m7
+armv7e-m/softfp;@mthumb@march=armv7e-m@mfloat-abi=softfp@mfpu=fpv4-sp-d16
+armv7e-m/fpu;@mthumb@march=armv7e-m@mfloat-abi=hard@mfpu=fpv4-sp-d16
+armv7-ar/thumb/softfp;@mthumb@march=armv7@mfloat-abi=softfp@mfpu=vfpv3-d16
+armv7-ar/thumb/fpu;@mthumb@march=armv7@mfloat-abi=hard@mfpu=vfpv3-d16
+cortex-m7/softfp/fpv5-sp-d16;@mthumb@mcpu=cortex-m7@mfloat-abi=softfp@mfpu=fpv5-sp-d16
+cortex-m7/softfp/fpv5-d16;@mthumb@mcpu=cortex-m7@mfloat-abi=softfp@mfpu=fpv5-d16
+cortex-m7/fpu/fpv5-sp-d16;@mthumb@mcpu=cortex-m7@mfloat-abi=hard@mfpu=fpv5-sp-d16
+cortex-m7/fpu/fpv5-d16;@mthumb@mcpu=cortex-m7@mfloat-abi=hard@mfpu=fpv5-d16
+
+The path from the CLI output is "armv7e-m". It is appended to
+
+* ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/arm-none-eabi/lib/ for libc and libm
+* ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/lib/gcc/arm-none-eabi/4.9.3/ for libgcc
+
+The resulting paths are:
+
+* ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/arm-none-eabi/lib/armv7e-m/ for libc and libm
+* ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/lib/gcc/arm-none-eabi/4.9.3/armv7e-m/ for libgcc

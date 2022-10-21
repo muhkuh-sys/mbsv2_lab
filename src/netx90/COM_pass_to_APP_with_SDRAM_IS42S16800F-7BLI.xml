@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR">
+	<Chunks>
+		<Snip artifact="setup_sdram_netx90_mpw" group="org.muhkuh.hboot.sniplib" version="1.0.0">
+			<Parameter name="SDRAM_DATA_START">0x10000000</Parameter>
+			<Parameter name="GENERAL_CTRL">0x030d0111</Parameter>
+			<Parameter name="TIMING_CTRL">0x02222151</Parameter>
+			<Parameter name="MODE_REGISTER">0x00000023</Parameter>
+		</Snip>
+
+		<!-- Start the APP CPU. -->
+		<StartAPP />
+
+		<Execute>
+			<Address>0x5107</Address>
+		</Execute>
+	</Chunks>
+</HBootImage>
+

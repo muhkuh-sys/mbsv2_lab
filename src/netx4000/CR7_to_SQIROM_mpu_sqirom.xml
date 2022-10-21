@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR" device="SQIROM0">
+	<Chunks>
+
+		<Snip artifact="mpu_sqirom_netx4000" group="org.muhkuh.hboot.sniplib" version="1.0.0"/>
+		<Skip absolute="0x3f8" />
+		
+		<!-- Set up the SQIROM0 area and enter the program. -->
+		<XIP>
+			<File name="@tElfCR7" />
+		</XIP>
+		<Execute>
+			<File name="@tElfCR7" />
+		</Execute>
+
+	</Chunks>
+</HBootImage>
+

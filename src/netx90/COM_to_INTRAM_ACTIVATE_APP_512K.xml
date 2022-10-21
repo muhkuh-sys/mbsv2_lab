@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR">
+	<Chunks>
+
+		<Skip absolute="0x80000" />
+	
+		<!-- Start the APP CPU. -->
+		<StartAPP />
+		
+		<!-- Load Programm for the COM CPU and start afterwards -->
+		<Data>
+			<File name="@tElfCOM" />
+		</Data>
+		<Execute>
+			<File name="@tElfCOM" />
+		</Execute>
+	</Chunks>
+</HBootImage>

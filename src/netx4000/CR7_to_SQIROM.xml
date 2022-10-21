@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR" device="SQIROM0">
+	<Chunks>
+
+		<Skip absolute="0x3f8" />
+		
+		<!-- Set up the SQIROM0 area and enter the program. -->
+		<XIP>
+			<File name="@tElfCR7" />
+		</XIP>
+		<Execute>
+			<File name="@tElfCR7" />
+		</Execute>
+
+	</Chunks>
+</HBootImage>
+

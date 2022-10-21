@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR">
+	<Chunks>
+		<!-- Breakpoint: Put a bx lr instruction (0x4770) in RAM and jump to it -->
+		<Data>
+			<Hex address="0x00020000">
+				70 47
+			</Hex>
+		</Data>
+		<Execute>
+			<Address>0x00020001</Address>
+		</Execute> 		
+		
+		<!-- Start the APP CPU. -->
+		<StartAPP />
+		
+		<!-- Load Programm for the COM CPU and start afterwards -->
+		<Data>
+			<File name="@tElfCOM" />
+		</Data>
+		
+		<!-- Breakpoint: Jump to a bx lr instruction in ROM, e.g. at 0x13c4 in netx90mpw -->
+		<Execute>
+			<Address>0x13c5</Address>
+		</Execute>
+			
+		<Execute>
+			<File name="@tElfCOM" />
+		</Execute>
+	</Chunks>
+</HBootImage>
