@@ -7,7 +7,7 @@ LD=~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm
 OBJCOPY=~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-objcopy
 OBJDUMP=~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-objdump
 CCFLAGS="-march=armv7e-m -mthumb -ffreestanding -mlong-calls -Wall -Wextra -Wconversion -Wshadow -Wcast-qual -Wwrite-strings -Wcast-align -Wpointer-arith -Wmissing-prototypes -Wstrict-prototypes -g3 -gdwarf-2 -std=c99 -pedantic"
-LIBPATH="-L$(realpath ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/arm-none-eabi/lib/armv7e-m/) -L$(realpath /home/cthelen/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/lib/gcc/arm-none-eabi/4.9.3/armv7e-m/)"
+LIBPATH="-L$(realpath ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/arm-none-eabi/lib/armv7e-m/) -L$(realpath ~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/lib/gcc/arm-none-eabi/4.9.3/armv7e-m/)"
 CPPDEFINES="-DASIC_TYP=ASIC_TYP_NETX90"
 
 # Build the platform library.
@@ -58,7 +58,7 @@ ${LD} --verbose -o ${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.elf \
 # Make a complete dump of the ELF file.
 ${OBJDUMP} --disassemble --source --all-headers --wide ${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.elf > ${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.txt
 
-python2.7 /home/cthelen/workspace/mbsv2_lab/tools/hboot_image_compiler/hboot_image_compiler \
+python2.7 tools/hboot_image_compiler/hboot_image_compiler \
  --objcopy ${OBJCOPY} \
  --objdump ${OBJDUMP} \
  --alias "tElfCOM=${BLINKI_NETX90_OUTPUT}/blinki_netx90_com_intram.elf" \
