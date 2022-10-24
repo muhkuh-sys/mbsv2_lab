@@ -1,10 +1,5 @@
 print("Initializing MBS")
 
--- FIXME: Either use the MBS interpreter or get the path in a flexible way.
-package.path = 'mbs/lua/?.lua;mbs/lua/?/init.lua;' .. package.path
-package.cpath = 'mbs/lua_plugins/?.so;mbs/lua_plugins/loadall.so;' .. package.cpath
-
-
 -----------------------------------------------------------------------------
 --
 -- Local helper functions.
