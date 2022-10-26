@@ -31,25 +31,23 @@ local tEnvDefault = NewSettings()
 -- Unlock the settings table. This allows the creation of new keys.
 TableUnlock(tEnvDefault)
 
--- Add Penlight to the environment.
-tEnvDefault.pl = require'pl.import_into'()
+-- Provide Penlight as an upvalue to all functions.
+local pl = require'pl.import_into'()
 
 --- Add a method to clone the environment.
 function tEnvDefault:Clone()
-  return self.pl.tablex.deepcopy(self)
+  return pl.tablex.deepcopy(self)
 end
 
 --- Set build path for a settings object.
 -- All source files must be in strSourcePath or below.
 -- The folder structure starting at strSourcePath will be duplicated at strOutputPath.
 function tEnvDefault:SetBuildPath(strSourcePath, strOutputPath)
-  local strSourcePathAbs = self.pl.path.abspath(strSourcePath)
-  local strOutputPathAbs = self.pl.path.abspath(strOutputPath)
+  local strSourcePathAbs = pl.path.abspath(strSourcePath)
+  local strOutputPathAbs = pl.path.abspath(strOutputPath)
 
   -- NOTE: This function uses the upvalues strSourcePathAbs and strOutputPathAbs.
   self.cc.Output = function(settings, strInput)
-    local pl = settings.pl
-
     -- Get the absolute path for the input file.
     local strAbsInput = pl.path.abspath(strInput)
     -- Get the relative path of the input element to the source path.
@@ -72,7 +70,7 @@ function tEnvDefault:Compile(...)
   local tIn = TableFlatten{...}
   local atSrc = {}
   for _, tSrc in ipairs(tIn) do
-    table.insert(atSrc, self.pl.path.abspath(tSrc))
+    table.insert(atSrc, pl.path.abspath(tSrc))
   end
   return Compile(self, atSrc)
 end
@@ -80,7 +78,6 @@ end
 
 
 function tEnvDefault:StaticLibrary(tTarget, ...)
-  local pl = self.pl
   local tIn = TableFlatten{...}
   local atSrc = {}
   for _, tSrc in ipairs(tIn) do
@@ -98,8 +95,6 @@ end
 
 -- This is the method for the environment. Users will call this in the "bam.lua" files.
 function tEnvDefault:Link(tTarget, strLdFile, ...)
-  local pl = self.pl
-
   -- Add a new custom entry to the "link" table.
   self.link.ldfile = pl.path.abspath(strLdFile)
   -- Get all input files in a flat table.

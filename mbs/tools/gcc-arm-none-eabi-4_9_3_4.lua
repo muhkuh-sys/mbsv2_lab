@@ -1,7 +1,9 @@
 local tTool = {}
 
+local pl = require'pl.import_into'()
+
 function tTool.AddCompiler(tEnv, strID)
-  local path = require 'pl.path'
+  local path = pl.path
 
   if strID=='NETX90' then
     -- Set the compiler.for netX90.
