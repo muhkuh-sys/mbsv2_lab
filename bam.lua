@@ -48,8 +48,8 @@ SubBAM('platform/bam.lua')
 --
 -- TODO: Make a function for this.
 local tFilterParameter = {
-  input = 'templates/version.h',
-  output = 'targets/version/version.h',
+  input = pl.path.abspath('templates/version.h'),
+  output = pl.path.abspath('targets/version/version.h'),
   replace = {
     PROJECT_VERSION_MAJOR = '1',
     PROJECT_VERSION_MINOR = '2',
@@ -132,6 +132,4 @@ for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
     atObjectsBlinki,
     tEnv.atVars.PLATFORM_LIB
   )
-  -- FIXME: This should be recognized automatically by the BAM dependency scanner, but it is not. Why?
-  AddDependency(tElf, tVersionFile)
 end
