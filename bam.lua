@@ -29,12 +29,12 @@ tGcc4_9_3_4.AddCompiler(tSettings_netX90, 'NETX90')
 local tSettings_netX90_PlatformLib = tSettings_netX90:Clone()
 
 -- Set special flags for the platform lib.
-tSettings_netX90_PlatformLib.cc.flags:Merge{
+tSettings_netX90_PlatformLib:AddCCFlags{
   '-ffunction-sections',
   '-fdata-sections'
 }
 -- Set include paths for the platform lib.
-tSettings_netX90_PlatformLib.cc.includes:Merge{
+tSettings_netX90_PlatformLib:AddInclude{
   'platform/src',
   'platform/src/lib'
 }
@@ -104,7 +104,7 @@ local tVersionFile = tFilterParameter.output
 local tSettings_netX90_Blinki = tSettings_netX90:Clone()
 
 -- Set include paths for the platform lib.
-tSettings_netX90_Blinki.cc.includes:Merge{
+tSettings_netX90_Blinki:AddInclude{
   'src',
   'platform/src',
   'platform/src/lib',

@@ -66,6 +66,19 @@ function tEnvDefault:SetBuildPath(strSourcePath, strOutputPath)
 end
 
 
+function tEnvDefault:AddInclude(...)
+  local tIn = TableFlatten{...}
+  for _, tSrc in ipairs(tIn) do
+    self.cc.includes:Add(pl.path.abspath(tSrc))
+  end
+end
+
+
+function tEnvDefault:AddCCFlags(...)
+  self.cc.flags:Merge( TableFlatten{...} )
+end
+
+
 function tEnvDefault:Compile(...)
   local tIn = TableFlatten{...}
   local atSrc = {}
