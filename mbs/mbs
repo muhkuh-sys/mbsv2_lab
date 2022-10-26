@@ -129,4 +129,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run the build system. Pass all arguments to bam.
-targets/jonchki/install/bam $@
+targets/jonchki/install/bam -t $@

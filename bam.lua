@@ -9,52 +9,38 @@ Import('mbs/mbs.lua')
 
 local pl = require'pl.import_into'()
 
--- Get the tools.
-local tGcc4_9_3_4 = require 'gcc-arm-none-eabi-4_9_3_4'
 
 ----------------------------------------------------------------------------------------------------------------------
 --
 -- Create all environments.
 --
 
+local atEnv = _G.atEnv
+
+atEnv.NETX500 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
+  :AddCompiler('NETX500')
+
+atEnv.NETX50 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
+  :AddCompiler('NETX50')
+
+atEnv.NETX56 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
+  :AddCompiler('NETX56')
+
+atEnv.NETX10 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
+  :AddCompiler('NETX10')
+
+
+
 -- Create a new environment for netX90.
-local tSettings_netX90 = _G.atEnv.DEFAULT:Clone()
--- Add the tools to the envorinment.
-tGcc4_9_3_4.AddCompiler(tSettings_netX90, 'NETX90')
+atEnv.NETX90 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.9'}
+  :AddCompiler('NETX90')
 
 ----------------------------------------------------------------------------------------------------------------------
 --
 -- Build the platform library.
 --
-local tSettings_netX90_PlatformLib = tSettings_netX90:Clone()
+SubBAM('platform/bam.lua')
 
--- Set special flags for the platform lib.
-tSettings_netX90_PlatformLib:AddCCFlags{
-  '-ffunction-sections',
-  '-fdata-sections'
-}
--- Set include paths for the platform lib.
-tSettings_netX90_PlatformLib:AddInclude{
-  'platform/src',
-  'platform/src/lib'
-}
-
-
-local astrPlatformLibSources = {
-  'platform/src/lib/rdy_run.c',
-  'platform/src/lib/systime.c',
-  'platform/src/lib/uart.c',
-  'platform/src/lib/uart_standalone.c',
-  'platform/src/lib/uprintf.c'
-}
--- Set ouput path for all sources in "platform/src/lib" to "platform/targets/netx90_com/lib".
-tSettings_netX90_PlatformLib:SetBuildPath('platform/src/lib', 'platform/targets/netx90_com/lib')
--- Build all sources.
-local atObjectsPlatformLib = tSettings_netX90_PlatformLib:Compile(astrPlatformLibSources)
-
--- Build a library from all objects.
--- TODO: The output name is generated somehow. Make this more intuitive. Or document how it works. :)
-local tPlatformLib = tSettings_netX90_PlatformLib:StaticLibrary('platform/targets/platform_netx90_com', atObjectsPlatformLib)
 
 --------------------------------------------------------------------------------------------------------------
 --
@@ -62,8 +48,8 @@ local tPlatformLib = tSettings_netX90_PlatformLib:StaticLibrary('platform/target
 --
 -- TODO: Make a function for this.
 local tFilterParameter = {
-  input = pl.path.abspath('templates/version.h'),
-  output = pl.path.abspath('targets/version/version.h'),
+  input = 'templates/version.h',
+  output = 'targets/version/version.h',
   replace = {
     PROJECT_VERSION_MAJOR = '1',
     PROJECT_VERSION_MINOR = '2',
@@ -89,7 +75,7 @@ local strFilterParameter = string.format(
 --print(strFilterParameter)
 -- TODO: Check if input file has changes.
 AddJob(
-  'targets/version/version.h',
+  tFilterParameter.output,
   string.format('Template %s', tFilterParameter.input),
   _bam_exe .. " -e mbs/builder/template.lua '" .. strFilterParameter .. "'"
 )
@@ -100,28 +86,52 @@ local tVersionFile = tFilterParameter.output
 --
 -- Build blinki.
 --
--- [[
-local tSettings_netX90_Blinki = tSettings_netX90:Clone()
-
--- Set include paths for the platform lib.
-tSettings_netX90_Blinki:AddInclude{
-  'src',
-  'platform/src',
-  'platform/src/lib',
-  'targets/version'
+local atBlinkiEnvironments = {
+  atEnv.NETX500,
+  atEnv.NETX50,
+  atEnv.NETX56,
+  atEnv.NETX10,
+  atEnv.NETX90
 }
+for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
+  local tEnv = tBaseEnv:Clone()
 
-local astrBlinkiNetx90Sources = {
-  'src/hboot_dpm.c',
-  'src/header.c',
-  'src/init.S',
-  'src/main.c'
-}
--- Set ouput path for all sources in "src" to "targets/netx90_com_intram".
-tSettings_netX90_Blinki:SetBuildPath('src', 'targets/netx90_com_intram')
--- Build all sources.
-local atObjectsBlinki = tSettings_netX90_Blinki:Compile(astrBlinkiNetx90Sources)
+  -- Set include paths for the platform lib.
+  tEnv:AddInclude{
+    'src',
+    'platform/src',
+    'platform/src/lib',
+    'targets/version'
+  }
 
--- Now link everything to an ELF file.
-local tElf = tSettings_netX90_Blinki:Link('targets/blinki_netx90_com_intram.elf', 'src/netx90/netx90_com_intram.ld', atObjectsBlinki, tPlatformLib)
---]]
+  local astrBlinkiSources = {
+    'src/hboot_dpm.c',
+    'src/header.c',
+    'src/init.S',
+    'src/main.c'
+  }
+  -- Set ouput path for all sources in "src" to "targets/netx90_com_intram".
+  tEnv:SetBuildPath(
+    'src',
+    string.format('targets/%s_intram', string.lower(tEnv.atVars.COMPILER_ID))
+  )
+  -- Build all sources.
+  local atObjectsBlinki = tEnv:Compile(astrBlinkiSources)
+
+  local atLdFiles = {
+    NETX90 = 'src/netx90/netx90_com_intram.ld',
+    NETX500 = 'src/netx500/netx500_intram.ld',
+    NETX50 = 'src/netx50/netx50_intram.ld',
+    NETX56 = 'src/netx56/netx56_intram.ld',
+    NETX10 = 'src/netx10/netx10_intram.ld'
+  }
+  -- Now link everything to an ELF file.
+  local tElf = tEnv:Link(
+    string.format('targets/blinki_%s_intram.elf', string.lower(tEnv.atVars.COMPILER_ID)),
+    atLdFiles[tEnv.atVars.COMPILER_ID],
+    atObjectsBlinki,
+    tEnv.atVars.PLATFORM_LIB
+  )
+  -- FIXME: This should be recognized automatically by the BAM dependency scanner, but it is not. Why?
+  AddDependency(tElf, tVersionFile)
+end

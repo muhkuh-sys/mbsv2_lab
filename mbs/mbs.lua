@@ -22,6 +22,102 @@ local function TableUnlock(tbl)
   end
 end
 
+
+--- Update a set of key-value pairs with another set.
+--  tTarget: table with key-value pairs which should be updated
+--  tInput: table with key-value pairs. Non-string keys will be skipped.
+--          value is converted to a string. Tables will be flattened and concatted.
+local function __updateAsStrings(tTarget, tInput)
+  for strKey, tValue in pairs(tInput) do
+    -- Silently skip non-string keys.
+    if type(strKey)=='string' then
+      local strType = type(tValue)
+      if strType=='table' then
+        tValue = table.concat(TableFlatten(tValue), ' ')
+      else
+        tValue = tostring(tValue)
+      end
+      tTarget[strKey] = tValue
+    end
+  end
+end
+
+
+
+local function __easyCommand(tEnv, tTarget, tInput, strToolName, atOverrides)
+  -- Get the absolute path to the target,
+  local strTargetAbs = pl.path.abspath(tTarget)
+  -- Flatten the inputs.
+  local astrInput
+  if type(tInput)=='table' then
+    astrInput = TableFlatten(tInput)
+  else
+    astrInput = {tInput}
+  end
+
+  -- Create a list with all replacement variables.
+  local atReplace = {}
+  -- Start with all variables from the environment.
+  __updateAsStrings(atReplace, tEnv.atVars)
+  -- Add all elements from the optional parameters.
+  __updateAsStrings(atReplace, atOverrides)
+  -- Set the target and sources.
+  atReplace.TARGET = strTargetAbs
+  atReplace.SOURCES = table.concat(astrInput, ' ')
+
+  -- Replace the command.
+  local strCmdVar = strToolName .. '_CMD'
+  local strCmdTemplate = tEnv.atVars[strCmdVar]
+  if strCmdTemplate==nil then
+    local strMsg = string.format('Failed to run tool "%s": no "%s" setting found.', strToolName, strCmdVar)
+    error(strMsg)
+  end
+  local strCmd = string.gsub(strCmdTemplate, '%$([%a_][%w_]+)', atReplace)
+
+  -- Replace the label.
+  local strLabelVar = strToolName .. '_LABEL'
+  local strLabelTemplate = tEnv.atVars[strLabelVar]
+  local strLabel
+  if strLabelTemplate==nil then
+    strLabel = strCmd
+  else
+    strLabel = string.gsub(strLabelTemplate, '%$([%a_][%w_]+)', atReplace)
+  end
+
+  AddJob(strTargetAbs, strLabel, strCmd, astrInput)
+end
+
+
+-------------------------------------------------------------------------------------------------
+--
+-- Global helper functions.
+--
+function SubBAM(strPath)
+  -- Read the specified file.
+  local compat = require 'pl.compat'
+  local path = require 'pl.path'
+  local utils = require 'pl.utils'
+  local strSubScript, strError = utils.readfile(strPath, false)
+  if strSubScript==nil then
+    error(string.format('SubBAM failed to read script "%s": %s', strPath, strError))
+  end
+
+  -- Get the current directory.
+  local strOldWorkingDirectory = path.currentdir()
+  local strSubFolder = path.abspath(path.dirname(strPath))
+  -- Change into the subfolder.
+  path.chdir(strSubFolder)
+  -- Run the script.
+  local tChunk, strError = compat.load(strSubScript, strPath, 't')
+  if tChunk==nil then
+    error(string.format('SubBAM failed to parse script "%s": %s', strPath, strError))
+  end
+  tChunk()
+  -- Restore the old working folder.
+  path.chdir(strOldWorkingDirectory)
+end
+
+
 -------------------------------------------------------------------------------------------------
 --
 -- Create the default environment.
@@ -34,10 +130,100 @@ TableUnlock(tEnvDefault)
 -- Provide Penlight as an upvalue to all functions.
 local pl = require'pl.import_into'()
 
+-- Add a table for general key/value pairs. They can be set during the build process to add extra information.
+tEnvDefault.atVars = {}
+
+-- Add a lookup table for the compiler. It maps the compiler ID to a setup function.
+tEnvDefault.atRegisteredCompiler = {}
+
 --- Add a method to clone the environment.
 function tEnvDefault:Clone()
   return pl.tablex.deepcopy(self)
 end
+
+
+function tEnvDefault:CreateEnvironment(astrTools)
+  local tEnv = self:Clone()
+
+  -- Read all tools in the mbs/tools folder.
+  local astrToolLuaPaths = pl.dir.getfiles('mbs/tools', '*.lua')
+  local atKnownTools = {}
+  for _, strToolPath in ipairs(astrToolLuaPaths) do
+    local strToolId = pl.path.splitext(pl.path.basename(strToolPath))
+    atKnownTools[strToolId] = pl.path.abspath(strToolPath)
+  end
+
+  -- Search all tools in the list.
+  for _, strRawTool in ipairs(astrTools) do
+    local strTool = string.gsub(strRawTool, '(%W)', '_')
+
+    -- Try an exact match first.
+    local strToolFullName
+    local strPath = atKnownTools[strTool]
+    if strPath~=nil then
+      strToolFullName = strTool
+    else
+      -- Look for an entry starting with the requested name.
+      for strToolName, strToolPath in pairs(atKnownTools) do
+        if strTool==string.sub(strToolName, 1, string.len(strTool)) then
+          strPath = strToolPath
+          strToolFullName = strToolName
+          break
+        end
+      end
+    end
+    if strPath==nil then
+      local strMsg = string.format('Tool "%s" not found. These tools are available: %s', strTool, table.concat(pl.tablex.keys(atKnownTools), ', '))
+      error(strMsg)
+    end
+    -- Try to load the tool script.
+    local strToolScript, strError = pl.utils.readfile(strPath, false)
+    if strToolScript==nil then
+      error(string.format('Failed to read script "%s": %s', strToolScriptFile, strError))
+    end
+
+    -- Run the script.
+    local tChunk, strError = pl.compat.load(strToolScript, strToolScriptFile, 't')
+    if tChunk==nil then
+      error(string.format('Failed to parse script "%s": %s', strToolScriptFile, strError))
+    end
+    -- Unlock the table as some tools add functions
+--    TableUnlock(tEnv)
+    tChunk(tEnv, strPath)
+--    TableLock(tEnv)
+  end
+
+  return tEnv
+end
+
+
+function tEnvDefault:AddCompiler(strCompilerID, strAsicTyp)
+  -- By default the ASIC typ is the compiler ID.
+  strAsicTyp = strAsicTyp or strCompilerID
+
+  -- Search the compiler ID in the registered compilers.
+  local fnSetup = self.atRegisteredCompiler[strCompilerID]
+  if fnSetup==nil then
+    error(string.format('Failed to add compiler with ID "%s": not found in registered compilers', tostring(strCompilerID)))
+  end
+
+  -- Apply the compiler settings by calling the setup function.
+  TableUnlock(self)
+  fnSetup(self)
+  TableLock(self)
+
+  -- Set the ASIC Type define.
+  self.cc.defines:Add(
+    string.format('ASIC_TYP=ASIC_TYP_%s', strAsicTyp)
+  )
+
+  -- Add the compiler ID and ASIC type to the vars.
+  self.atVars['COMPILER_ID'] = strCompilerID
+  self.atVars['ASIC_TYP'] = strAsicTyp
+
+  return self
+end
+
 
 --- Set build path for a settings object.
 -- All source files must be in strSourcePath or below.
@@ -176,9 +362,25 @@ local function DriverGCC_Link(label, output, inputs, settings)
 end
 tEnvDefault.link.Driver = DriverGCC_Link
 
+
+local function DriverGCC_Lib(output, inputs, settings)
+  local strCmd = table.concat{
+    -- output archive must be removed because ar will update existing archives, possibly leaving stray objects
+    'rm -f ', output, ' 2> /dev/null; ',
+    settings.lib.exe, ' rcD ', output, ' ', TableToString(inputs, '', ' '), settings.lib.flags:ToString()
+  }
+  return strCmd
+end
+tEnvDefault.lib.Driver = DriverGCC_Lib
+
+
+-- Finally lock the table again.
+TableLock(tEnvDefault)
+
 ---------------------------------------------------------------------------------------------------------------------
 
 -- Create one global table for all environments.
 -- Add the default environment with the key "DEFAULT".
-_G.atEnv = {}
+local atEnv = {}
 atEnv.DEFAULT = tEnvDefault
+_G.atEnv = atEnv
