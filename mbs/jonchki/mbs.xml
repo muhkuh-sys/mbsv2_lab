@@ -14,4 +14,9 @@
 		<dependency group="com.github.lunarmodules" module="Penlight" artifact="Penlight" version="1"/>
 		<dependency group="com.github.openresty" module="lua-cjson" artifact="lua5.4-lua-cjson" version="2"/>
 	</dependencies>
+	<actions>
+		<action name="pack" path="${install_base}">
+			return true
+		</action>
+	</actions>
 </jonchki-artifact>
