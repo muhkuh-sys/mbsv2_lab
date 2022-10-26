@@ -1,5 +1,3 @@
-print("Initializing MBS")
-
 -----------------------------------------------------------------------------
 --
 -- Local helper functions.
@@ -251,10 +249,9 @@ local tPlatformLib = tSettings_netX90_PlatformLib:StaticLibrary('platform/target
 -- Filter the version.h file.
 --
 -- TODO: Make a function for this.
-local cjson = require 'cjson.safe'
 local tFilterParameter = {
-  input = 'templates/version.h',
-  output = 'targets/version/version.h',
+  input = pl.path.abspath('templates/version.h'),
+  output = pl.path.abspath('targets/version/version.h'),
   replace = {
     PROJECT_VERSION_MAJOR = '1',
     PROJECT_VERSION_MINOR = '2',
@@ -262,9 +259,29 @@ local tFilterParameter = {
     PROJECT_VERSION_VCS = 'GITabc'
   }
 }
+--[[
+local cjson = require 'cjson.safe'
 local strFilterParameter = cjson.encode(tFilterParameter)
+--]]
+-- [[
+local strFilterParameter = string.format(
+  '{"input":"%s","output":"%s","replace":{"PROJECT_VERSION_MAJOR":"%s","PROJECT_VERSION_MINOR":"%s","PROJECT_VERSION_MICRO":"%s","PROJECT_VERSION_VCS":"%s"}}',
+  tFilterParameter.input,
+  tFilterParameter.output,
+  tFilterParameter.replace.PROJECT_VERSION_MAJOR,
+  tFilterParameter.replace.PROJECT_VERSION_MINOR,
+  tFilterParameter.replace.PROJECT_VERSION_MICRO,
+  tFilterParameter.replace.PROJECT_VERSION_VCS
+)
+--]]
+--print(strFilterParameter)
 -- TODO: Check if input file has changes.
-AddJob('targets/version/version.h', "Template targets/version/version.h", _bam_exe .. " -e mbs/builder/template.lua '" .. strFilterParameter .. "'")
+AddJob(
+  'targets/version/version.h',
+  string.format('Template %s', tFilterParameter.input),
+  _bam_exe .. " -e mbs/builder/template.lua '" .. strFilterParameter .. "'"
+)
+local tVersionFile = tFilterParameter.output
 
 
 --------------------------------------------------------------------------------------------------------------
