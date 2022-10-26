@@ -29,9 +29,6 @@ atEnv.NETX56 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
 atEnv.NETX10 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
   :AddCompiler('NETX10')
 
-
-
--- Create a new environment for netX90.
 atEnv.NETX90 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.9'}
   :AddCompiler('NETX90')
 
@@ -46,40 +43,16 @@ SubBAM('platform/bam.lua')
 --
 -- Filter the version.h file.
 --
--- TODO: Make a function for this.
-local tFilterParameter = {
-  input = pl.path.abspath('templates/version.h'),
-  output = pl.path.abspath('targets/version/version.h'),
-  replace = {
+local tVersionFile = atEnv.DEFAULT:Template(
+  'targets/version/version.h',
+  'templates/version.h',
+  {
     PROJECT_VERSION_MAJOR = '1',
     PROJECT_VERSION_MINOR = '2',
     PROJECT_VERSION_MICRO = '3',
     PROJECT_VERSION_VCS = 'GITabc'
   }
-}
---[[
-local cjson = require 'cjson.safe'
-local strFilterParameter = cjson.encode(tFilterParameter)
---]]
--- [[
-local strFilterParameter = string.format(
-  '{"input":"%s","output":"%s","replace":{"PROJECT_VERSION_MAJOR":"%s","PROJECT_VERSION_MINOR":"%s","PROJECT_VERSION_MICRO":"%s","PROJECT_VERSION_VCS":"%s"}}',
-  tFilterParameter.input,
-  tFilterParameter.output,
-  tFilterParameter.replace.PROJECT_VERSION_MAJOR,
-  tFilterParameter.replace.PROJECT_VERSION_MINOR,
-  tFilterParameter.replace.PROJECT_VERSION_MICRO,
-  tFilterParameter.replace.PROJECT_VERSION_VCS
 )
---]]
---print(strFilterParameter)
--- TODO: Check if input file has changes.
-AddJob(
-  tFilterParameter.output,
-  string.format('Template %s', tFilterParameter.input),
-  _bam_exe .. " -e mbs/builder/template.lua '" .. strFilterParameter .. "'"
-)
-local tVersionFile = tFilterParameter.output
 
 
 --------------------------------------------------------------------------------------------------------------

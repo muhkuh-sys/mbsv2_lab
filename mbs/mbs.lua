@@ -197,6 +197,27 @@ function tEnvDefault:CreateEnvironment(astrTools)
 end
 
 
+function tEnvDefault:AddBuilder(strBuilder)
+  -- Try to load the builder script.
+  local strBuilderScript, strError = pl.utils.readfile(strBuilder, false)
+  if strBuilderScript==nil then
+    error(string.format('Failed to read script "%s": %s', strBuilder, strError))
+  end
+
+  -- Run the script.
+  local tChunk, strError = pl.compat.load(strBuilderScript, strBuilder, 't')
+  if tChunk==nil then
+    error(string.format('Failed to parse script "%s": %s', strBuilder, strError))
+  end
+  -- Unlock the table as some tools add functions
+--  TableUnlock(tEnv)
+  tChunk(self)
+--  TableLock(tEnv)
+
+  return self
+end
+
+
 function tEnvDefault:AddCompiler(strCompilerID, strAsicTyp)
   -- By default the ASIC typ is the compiler ID.
   strAsicTyp = strAsicTyp or strCompilerID
@@ -372,6 +393,11 @@ local function DriverGCC_Lib(output, inputs, settings)
   return strCmd
 end
 tEnvDefault.lib.Driver = DriverGCC_Lib
+
+
+-- Add some common builder.
+tEnvDefault:AddBuilder('mbs/builder/template.lua')
+
 
 
 -- Finally lock the table again.

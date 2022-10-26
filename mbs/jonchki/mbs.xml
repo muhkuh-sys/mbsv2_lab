@@ -12,7 +12,7 @@
 	<dependencies>
 		<dependency group="com.github.matricks" module="bam" artifact="bam" version="0.5"/>
 		<dependency group="com.github.lunarmodules" module="Penlight" artifact="Penlight" version="1"/>
-		<dependency group="com.github.openresty" module="lua-cjson" artifact="lua5.4-lua-cjson" version="2"/>
+		<dependency group="com.github.xpol" module="lua-rapidjson" artifact="lua5.4-lua-rapidjson" version="0"/>
 	</dependencies>
 	<actions>
 		<action name="pack" path="${install_base}">
