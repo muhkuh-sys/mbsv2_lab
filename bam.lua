@@ -9,44 +9,18 @@ Import('mbs/mbs.lua')
 
 local pl = require'pl.import_into'()
 
+-- Get the tools.
+local tGcc4_9_3_4 = require 'gcc-arm-none-eabi-4_9_3_4'
+
 ----------------------------------------------------------------------------------------------------------------------
+--
+-- Create all environments.
+--
 
 -- Create a new environment for netX90.
 local tSettings_netX90 = _G.atEnv.DEFAULT:Clone()
-
--- Set the compiler.for netX90.
-tSettings_netX90.cc.exe_c = '~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-gcc'
-tSettings_netX90.cc.exe_cxx = '~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-g++'
-tSettings_netX90.lib.exe = '~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-ar'
-tSettings_netX90.link.exe = '~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/bin/arm-none-eabi-ld'
-
--- Set all defines.
-tSettings_netX90.cc.defines:Merge {
-  'ASIC_TYP=ASIC_TYP_NETX90'
-}
-
--- These are the defines for the compiler.
--- TODO: move this somewhere else, e.g. compiler package.
-tSettings_netX90.cc.flags:Merge {
-  '-march=armv7e-m',
-  '-mthumb',
-  '-ffreestanding',
-  '-mlong-calls',
-  '-Wall',
-  '-Wextra',
-  '-Wconversion',
-  '-Wshadow',
-  '-Wcast-qual',
-  '-Wwrite-strings',
-  '-Wcast-align',
-  '-Wpointer-arith',
-  '-Wmissing-prototypes',
-  '-Wstrict-prototypes',
-  '-g3',
-  '-gdwarf-2',
-  '-std=c99',
-  '-pedantic'
-}
+-- Add the tools to the envorinment.
+tGcc4_9_3_4.AddCompiler(tSettings_netX90, 'NETX90')
 
 ----------------------------------------------------------------------------------------------------------------------
 --
@@ -149,15 +123,5 @@ tSettings_netX90_Blinki:SetBuildPath('src', 'targets/netx90_com_intram')
 local atObjectsBlinki = tSettings_netX90_Blinki:Compile(astrBlinkiNetx90Sources)
 
 -- Now link everything to an ELF file.
-tSettings_netX90_Blinki.link.libs = {
-  'm',
-  'c',
-  'gcc'
-}
--- TODO: Move this to a helper function.
-tSettings_netX90_Blinki.link.libpath = {
-  pl.path.abspath(pl.path.expanduser('~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/arm-none-eabi/lib/armv7e-m/')),
-  pl.path.abspath(pl.path.expanduser('~/.mbs/depack/org.gnu.gcc/gcc-arm-none-eabi/gcc-arm-none-eabi-4.9.3_4/lib/gcc/arm-none-eabi/4.9.3/armv7e-m/'))
-}
 local tElf = tSettings_netX90_Blinki:Link('targets/blinki_netx90_com_intram.elf', 'src/netx90/netx90_com_intram.ld', atObjectsBlinki, tPlatformLib)
 --]]

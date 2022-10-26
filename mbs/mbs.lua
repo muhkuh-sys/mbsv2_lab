@@ -1,3 +1,6 @@
+-- Add the MBS "tools" folder to the LUA search path.
+package.path = 'mbs/tools/?.lua;mbs/tools/?/init.lua;' .. package.path
+
 -----------------------------------------------------------------------------
 --
 -- Local helper functions.
