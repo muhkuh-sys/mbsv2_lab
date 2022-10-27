@@ -16,6 +16,15 @@
             "type": "shell",
             "command": "mbs2/mbs -c",
             "problemMatcher": "$gcc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "generate debug infos",
+            "type": "shell",
+            "command": "mbs/mbs --debug-nodes-html >targets/debug.html",
             "problemMatcher": "$gcc",
             "group": {
                 "kind": "build",
