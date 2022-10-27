@@ -29,6 +29,9 @@ atEnv.NETX56 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
 atEnv.NETX10 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.7'}
   :AddCompiler('NETX10')
 
+atEnv.NETX4000 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.9'}
+  :AddCompiler('NETX4000')
+
 atEnv.NETX90 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.9'}
   :AddCompiler('NETX90')
 
