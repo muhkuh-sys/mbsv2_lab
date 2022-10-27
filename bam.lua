@@ -63,6 +63,7 @@ local tVersionFile = atEnv.DEFAULT:Template(
 -- Build blinki.
 --
 local atBlinkiEnvironments = {
+  atEnv.NETX4000,
   atEnv.NETX500,
   atEnv.NETX50,
   atEnv.NETX56,
@@ -95,6 +96,7 @@ for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
   local atObjectsBlinki = tEnv:Compile(astrBlinkiSources)
 
   local atLdFiles = {
+    NETX4000 = 'src/netx4000/netx4000_cr7_intram.ld',
     NETX90 = 'src/netx90/netx90_com_intram.ld',
     NETX500 = 'src/netx500/netx500_intram.ld',
     NETX50 = 'src/netx50/netx50_intram.ld',
