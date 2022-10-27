@@ -4,7 +4,7 @@
 --
 
 -- Setup the Muhkuh build system.
-Import('mbs/mbs.lua')
+Import('mbs2/mbs.lua')
 
 
 local pl = require'pl.import_into'()
