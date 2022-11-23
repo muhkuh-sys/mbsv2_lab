@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR" device="SQIROM" offset="0">
+	<!-- Set the ROM access speed to 80MHz.
+	     Everything else is done with SFDP. -->
+	<Header>
+		<Value index="1">50 | 100 &lt;&lt; 16</Value>
+	</Header>
+	<Chunks>
+		<!-- Load Programm for the COM CPU and start afterwards -->
+		<XIP>
+			<File name="@tElfCOM" />
+		</XIP>
+
+		<Execute>
+			<File name="@tElfCOM" />
+		</Execute>
+	</Chunks>
+</HBootImage>
+

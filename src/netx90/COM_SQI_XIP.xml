@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<HBootImage type="REGULAR" device="SQIROM" offset="0">
+	<Chunks>
+		<!-- Load Programm for the COM CPU and start afterwards -->
+		<XIP>
+			<File name="@tElfCOM" />
+		</XIP>
+
+		<Execute>
+			<File name="@tElfCOM" />
+		</Execute>
+	</Chunks>
+</HBootImage>
+

@@ -67,32 +67,8 @@ local tVersionFile = atEnv.DEFAULT:VersionTemplate(
 -- Build blinki.
 --
 
-local atBlinkiEnvironments = {
-  atEnv.NETX4000,
-  atEnv.NETX500,
-  atEnv.NETX50,
-  atEnv.NETX56,
-  atEnv.NETX10,
-  atEnv.NETX90
-}
-
-local atLdFiles = {
-  NETX4000 = 'src/netx4000/netx4000_cr7_intram.ld',
-  NETX90 = 'src/netx90/netx90_com_intram.ld',
-  NETX500 = 'src/netx500/netx500_intram.ld',
-  NETX50 = 'src/netx50/netx50_intram.ld',
-  NETX56 = 'src/netx56/netx56_intram.ld',
-  NETX10 = 'src/netx10/netx10_intram.ld'
-}
-
-local atTargetBinFiles = {
-  NETX4000 = 'targets/blinki_netx4000_com_intram.bin',
-  NETX90 = 'targets/blinki_netx90_com_intram.bin',
-  NETX500 = 'targets/blinki_netx500_com_intram.bin',
-  NETX50 = 'targets/blinki_netx50_com_intram.bin',
-  NETX56 = 'targets/blinki_netx56_com_intram.bin',
-  NETX10 = 'targets/blinki_netx10_com_intram.bin'
-}
+-- save link environments
+local atEnvLink = {}
 
 local astrBlinkiSources = {
   'src/hboot_dpm.c',
@@ -101,12 +77,149 @@ local astrBlinkiSources = {
   'src/main.c'
 }
 
-local atEnvLink = {}
-for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
-  local tEnv = tBaseEnv:Clone()
+local atBlinkiSettings = {
+  NETX4000_intram =
+  {
+    BaseEnv = atEnv.NETX4000,
+    LdFile = 'src/netx4000/netx4000_cr7_intram.ld',
+    BuildPath = string.format('targets/%s_intram', string.lower(atEnv.NETX4000.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_intram.elf',string.lower(atEnv.NETX4000.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_intram.bin',string.lower(atEnv.NETX4000.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_intram.txt', string.lower(atEnv.NETX4000.atVars.COMPILER_ID))
+  },
+  NETX500_intram =
+  {
+    BaseEnv = atEnv.NETX500,
+    LdFile = 'src/netx500/netx500_intram.ld',
+    BuildPath = string.format('targets/%s_intram', string.lower(atEnv.NETX500.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_intram.elf',string.lower(atEnv.NETX500.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_intram.bin',string.lower(atEnv.NETX500.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_intram.txt', string.lower(atEnv.NETX500.atVars.COMPILER_ID))
+  },
+  NETX50_intram =
+  {
+    BaseEnv = atEnv.NETX50,
+    LdFile = 'src/netx50/netx50_intram.ld',
+    BuildPath = string.format('targets/%s_intram', string.lower(atEnv.NETX50.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_intram.elf',string.lower(atEnv.NETX50.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_intram.bin',string.lower(atEnv.NETX50.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_intram.txt', string.lower(atEnv.NETX50.atVars.COMPILER_ID))
+  },
+  NETX56_intram =
+  {
+    BaseEnv = atEnv.NETX56,
+    LdFile = 'src/netx56/netx56_intram.ld',
+    BuildPath = string.format('targets/%s_intram', string.lower(atEnv.NETX56.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_intram.elf',string.lower(atEnv.NETX56.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_intram.bin',string.lower(atEnv.NETX56.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_intram.txt', string.lower(atEnv.NETX56.atVars.COMPILER_ID))
+  },
+  NETX10_intram = {
+    BaseEnv = atEnv.NETX10,
+    LdFile = 'src/netx10/netx10_intram.ld',
+    BuildPath = string.format('targets/%s_intram', string.lower(atEnv.NETX10.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_intram.elf',string.lower(atEnv.NETX10.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_intram.bin',string.lower(atEnv.NETX10.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_intram.txt', string.lower(atEnv.NETX10.atVars.COMPILER_ID))
+  },
+  NETX90_com_intram = {
+    BaseEnv = atEnv.NETX90,
+    LdFile = 'src/netx90/netx90_com_intram.ld',
+    BuildPath = string.format('targets/%s_com_intram', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_com_intram.elf', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_com_intram.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_com_intram.txt', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    HBootImage =
+    {
+      NETX90_COM_to_INTRAM =
+      {
+        Target = string.format('targets/blinki_%s_com_intram.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootDefinition = string.format("src/%s/COM_to_INTRAM.xml",string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootArguments =
+        {
+          objcopy = atEnv.NETX90.atVars["OBJCOPY"],
+          objdump = atEnv.NETX90.atVars["OBJDUMP"],
+          ["netx-type"] = atEnv.NETX90.atVars.COMPILER_ID,
+        }
+      }
+    }
+  },
+  NETX90_com_sqixip = {
+    BaseEnv = atEnv.NETX90,
+    LdFile = 'src/netx90/netx90_sqixip.ld',
+    BuildPath = string.format('targets/%s_com_sqixip', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    LinkName = string.format('blinki_%s_com_sqixip.elf', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    ObjCopyName = string.format('blinki_%s_com_sqixip.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    ObjDumpName = string.format('blinki_%s_com_sqixip.txt', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+    HBootImage =
+    {
+      NETX90_COM_SQI_XIP =
+      {
+        Target = string.format('targets/blinki_%s_com_sqixip.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootDefinition = string.format("src/%s/COM_SQI_XIP.xml",string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootArguments =
+        {
+          objcopy = atEnv.NETX90.atVars["OBJCOPY"],
+          objdump = atEnv.NETX90.atVars["OBJDUMP"],
+          ["netx-type"] = atEnv.NETX90.atVars.COMPILER_ID,
+        }
+      },
+      NETX90_COM_SQI_XIP_66MHz =
+      {
+        Target = string.format('targets/blinki_%s_com_sqixip_66MHz.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootDefinition = string.format("src/%s/COM_SQI_XIP_66MHz.xml",string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootArguments =
+        {
+          objcopy = atEnv.NETX90.atVars["OBJCOPY"],
+          objdump = atEnv.NETX90.atVars["OBJDUMP"],
+          ["netx-type"] = atEnv.NETX90.atVars.COMPILER_ID,
+        }
+      },
+      NETX90_COM_SQI_XIP_80MHz =
+      {
+        Target = string.format('targets/blinki_%s_com_sqixip_80MHz.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootDefinition = string.format("src/%s/COM_SQI_XIP_80MHz.xml",string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootArguments =
+        {
+          objcopy = atEnv.NETX90.atVars["OBJCOPY"],
+          objdump = atEnv.NETX90.atVars["OBJDUMP"],
+          ["netx-type"] = atEnv.NETX90.atVars.COMPILER_ID,
+        }
+      },
+      NETX90_COM_SQI_XIP_100MHz =
+      {
+        Target = string.format('targets/blinki_%s_com_sqixip_100MHz.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootDefinition = string.format("src/%s/COM_SQI_XIP_100MHz.xml",string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootArguments =
+        {
+          objcopy = atEnv.NETX90.atVars["OBJCOPY"],
+          objdump = atEnv.NETX90.atVars["OBJDUMP"],
+          ["netx-type"] = atEnv.NETX90.atVars.COMPILER_ID,
+        }
+      },
+      NETX90_COM_SQI_XIP_133MHz =
+      {
+        Target = string.format('targets/blinki_%s_com_sqixip_133MHz.bin', string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootDefinition = string.format("src/%s/COM_SQI_XIP_133MHz.xml",string.lower(atEnv.NETX90.atVars.COMPILER_ID)),
+        HbootArguments =
+        {
+          objcopy = atEnv.NETX90.atVars["OBJCOPY"],
+          objdump = atEnv.NETX90.atVars["OBJDUMP"],
+          ["netx-type"] = atEnv.NETX90.atVars.COMPILER_ID,
+        }
+      }
+    }
+  },
+}
+
+
+-- Create ELF file, ObjCopy file and ObjDump file for the netX90 communication CPU.
+for strKey_Env, tSettings in pairs(atBlinkiSettings) do
+
+  local tEnv = tSettings.BaseEnv:Clone()
 
   -- Save the link object
-  atEnvLink[tEnv.atVars.COMPILER_ID] = tEnv
+  atEnvLink[strKey_Env] = tEnv
 
   -- Set include paths for the platform lib.
   tEnv:AddInclude{
@@ -119,7 +232,7 @@ for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
   -- Set ouput path for all sources in "src" to "targets/netx90_com_intram".
   tEnv:SetBuildPath(
     'src',
-    string.format('targets/%s_intram', string.lower(tEnv.atVars.COMPILER_ID))
+    tSettings.BuildPath
   )
   -- Build all sources.
   local atObjectsBlinki = tEnv:Compile(astrBlinkiSources)
@@ -129,8 +242,8 @@ for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
 
   -- Now link everything to an ELF file.
   local tElf = tEnv:Link(
-    string.format('targets/%s_intram/blinki_%s_intram.elf', string.lower(tEnv.atVars.COMPILER_ID),string.lower(tEnv.atVars.COMPILER_ID)),
-    atLdFiles[tEnv.atVars.COMPILER_ID],
+    pl.path.join(tSettings.BuildPath,tSettings.LinkName),
+    tSettings.LdFile,
     atObjectsBlinki,
     tEnv.atVars.PLATFORM_LIB
   )
@@ -140,7 +253,7 @@ for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
 
   -- Create a ObjCopy file.
   local tObjCopy = tEnv:ObjCopy(
-    string.format('targets/%s_intram/blinki_%s_intram.bin', string.lower(tEnv.atVars.COMPILER_ID),string.lower(tEnv.atVars.COMPILER_ID)),
+    pl.path.join(tSettings.BuildPath,tSettings.ObjCopyName),
     tElf
   )
 
@@ -149,24 +262,35 @@ for _, tBaseEnv in ipairs(atBlinkiEnvironments) do
 
   -- Create a ObjDump file.
   local tObjDump = tEnv:ObjDump(
-    string.format('targets/%s_intram/blinki_%s_intram.txt', string.lower(tEnv.atVars.COMPILER_ID),string.lower(tEnv.atVars.COMPILER_ID)),
+    pl.path.join(tSettings.BuildPath,tSettings.ObjDumpName),
     tElf
   )
 
   -- Add file path of ObjDump file
   tEnv.atVars["Path_ObjDumpFile"] = tObjDump
 
+  -- Create file path of HBootImage files
+  tEnv.atVars["Path_HBootImageFile"] = {}
+
+  if tSettings.HBootImage ~= nil then
+    for strKey_HBootImage,tHBootImage_Settings in pairs(tSettings.HBootImage) do
+      -- add alias to HbootArguments
+      tHBootImage_Settings.HbootArguments.alias = {tElfCOM = tEnv.atVars["Path_ElfFile"]}
+
+      -- Create a binary file for the netX90 communication CPU.
+      local tHBootImage = tEnv:HBootImage(
+        tHBootImage_Settings.Target,
+        tHBootImage_Settings.HbootDefinition,
+        tEnv.atVars["Path_ElfFile"],
+        tHBootImage_Settings.HbootArguments
+      )
+
+      -- Add file path of HBootImage file
+      tEnv.atVars["Path_HBootImageFile"].strKey_HBootImage = strKey_HBootImage
+    end
+  end
 end
 
--- Create a binary file.
-atEnvLink["NETX90"]:HBootImage(
-  string.format('targets/blinki_%s_com_intram.bin', string.lower(atEnvLink["NETX90"].atVars.COMPILER_ID)),
-  string.format("src/%s/COM_to_INTRAM.xml",string.lower(atEnvLink["NETX90"].atVars.COMPILER_ID)),
-  atEnvLink["NETX90"].atVars["Path_ElfFile"],
-  {
-    objcopy = atEnvLink["NETX90"].atVars["OBJCOPY"],
-    objdump = atEnvLink["NETX90"].atVars["OBJDUMP"],
-    alias = {tElfCOM = atEnvLink["NETX90"].atVars["Path_ElfFile"]},
-    ["netx-type"] = atEnvLink["NETX90"].atVars.COMPILER_ID,
-  }
-  )
+
+
+
