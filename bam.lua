@@ -3,23 +3,28 @@
 -- BAM Manual : https://matricks.github.io/bam/bam.html
 --
 
+-- DEBUGGING:
+-- require("LuaPanda").start()
+
 -- Provide Penlight.
 local pl = require'pl.import_into'()
 
+
 -----------------------------------------------------------------------------
 --
--- Initialize the build system.
+-- Setup the Muhkuh build system.
 --
 
--- Setup the Muhkuh build system.
-Import('mbs2/mbs.lua')
+
+local atEnv = {}
+atEnv.DEFAULT = require "mbs"()
+
 
 ----------------------------------------------------------------------------------------------------------------------
 --
 -- Create all environments.
 --
 
-local atEnv = _G.atEnv
 
 -- Set some variables.
 -- FIXME: Move this to build.properties and CLI.
@@ -56,7 +61,8 @@ atEnv.NETX90 = atEnv.DEFAULT:CreateEnvironment{'gcc-arm-none-eabi-4.9'}
 -- Build the platform library.
 --
 
-SubBAM('platform/bam.lua')
+SubBAM('platform/bam.lua',atEnv)
+
 
 --------------------------------------------------------------------------------------------------------------
 --
@@ -70,6 +76,7 @@ local tBlinki_sources = {
   'src/main.c'
 }
 
+
 --------------------------------------------------------------------------------------------------------------
 --
 -- Filter the version.h file.
@@ -79,6 +86,7 @@ local tVersionFile = atEnv.DEFAULT:VersionTemplate(
   'targets/version/version.h', -- output path
   'templates/version.h' -- input path
 )
+
 
 --------------------------------------------------------------------------------------------------------------
 --
