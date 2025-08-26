@@ -6,19 +6,14 @@
 -- DEBUGGING:
 -- require("LuaPanda").start()
 
--- Provide Penlight.
-local pl = require'pl.import_into'()
-
 
 -----------------------------------------------------------------------------
 --
 -- Setup the Muhkuh build system.
 --
+local atEnv = require 'mbs'
 
-
-local atEnv = {}
-atEnv.DEFAULT = require "mbs"()
-
+local path = require 'pl.path'
 
 ----------------------------------------------------------------------------------------------------------------------
 --
@@ -245,7 +240,7 @@ for strBuildName, atBuildAttributes in pairs(atBuildConfigurations) do
   -- Set ouput path for all sources in "src".
   tEnv:SetBuildPath(
     'src',
-    pl.path.join("targets",strBuildName,'build')
+    path.join("targets",strBuildName,'build')
   )
 
   -- Build all sources.
@@ -256,7 +251,7 @@ for strBuildName, atBuildAttributes in pairs(atBuildConfigurations) do
 
   -- Now link the libraries to an ELF file.
   local tElf = tEnv:Link(
-    pl.path.join("targets",strBuildName,strBuildName .. ".elf"),
+    path.join("targets",strBuildName,strBuildName .. ".elf"),
     atBuildAttributes.LDFILE,
     atObjects,
     tEnv.atVars.PLATFORM_LIB
@@ -264,13 +259,13 @@ for strBuildName, atBuildAttributes in pairs(atBuildConfigurations) do
 
   -- Create a complete dump of the ELF file.
   local tTxt = tEnv:ObjDump(
-    pl.path.join("targets",strBuildName,strBuildName .. ".txt"),
+    path.join("targets",strBuildName,strBuildName .. ".txt"),
     tElf
   )
 
   -- Create a binary from the ELF file.
   local tBin = tEnv:ObjCopy(
-    pl.path.join("targets",strBuildName,atBuildAttributes.BIN_NAME .. ".bin"),
+    path.join("targets",strBuildName,atBuildAttributes.BIN_NAME .. ".bin"),
     tElf
   )
 
@@ -282,7 +277,7 @@ for strBuildName, atBuildAttributes in pairs(atBuildConfigurations) do
 
       -- Create a binary file for the netX90 communication CPU.
       local tHBootImage = tEnv:HBootImage(
-        pl.path.join("targets",strBuildName,"hboot_image",string.format("%s_%s.bin",atBuildAttributes.BIN_NAME,strHBootImageName)),
+        path.join("targets",strBuildName,"hboot_image",string.format("%s_%s.bin",atBuildAttributes.BIN_NAME,strHBootImageName)),
         atHBootImageAttributes.HBOOT_DEFINITION,
         tElf,
         atHBootImageAttributes.HBOOT_ARG
